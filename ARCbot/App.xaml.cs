@@ -17,6 +17,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        Logger.Info("ARCbot starting...");
         PathHelper.EnsureDirectories();
 
         var serviceCollection = new ServiceCollection();
@@ -83,13 +84,16 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        Logger.Info("ARCbot shutting down...");
+
         if (Services is IDisposable disposable)
         {
             // 停止所有运行中的进程
             var instanceManager = Services.GetRequiredService<InstanceManager>();
             foreach (var pm in instanceManager.RunningProcesses.Values)
             {
-                pm.Dispose();
+                try { pm.Dispose(); }
+                catch (Exception ex) { Logger.Error(ex, "App.OnExit"); }
             }
         }
 

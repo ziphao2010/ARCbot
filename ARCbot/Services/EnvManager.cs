@@ -33,12 +33,12 @@ public class EnvManager
         sb.AppendLine($"MC_VERSION={instance.McVersion}");
         sb.AppendLine($"MC_USERNAME={instance.McUsername}");
         sb.AppendLine($"MC_AUTH_TYPE={instance.McAuthType}");
-        sb.AppendLine($"MC_LOGIN_PASSWORD={instance.McLoginPassword}");
+        sb.AppendLine($"MC_LOGIN_PASSWORD={CryptoHelper.Protect(instance.McLoginPassword)}");
         sb.AppendLine($"MC_OWNER_NAME={instance.McOwnerName}");
         sb.AppendLine();
 
         sb.AppendLine("#  AI Configuration ");
-        sb.AppendLine($"LLM_API_KEY={instance.LlmApiKey}");
+        sb.AppendLine($"LLM_API_KEY={CryptoHelper.Protect(instance.LlmApiKey)}");
         sb.AppendLine($"LLM_API_URL={instance.LlmApiUrl}");
         sb.AppendLine($"LLM_MODEL={instance.LlmModel}");
         sb.AppendLine($"AI_STYLE_PROMPT={instance.AiStylePrompt}");
@@ -56,8 +56,49 @@ public class EnvManager
         File.WriteAllText(envPath, sb.ToString(), Encoding.UTF8);
     }
 
+    public void WriteRuntimeEnv(BotInstance instance, string outputPath)
+    {
+        var dir = Path.GetDirectoryName(outputPath)!;
+        Directory.CreateDirectory(dir);
+
+        var sb = new StringBuilder();
+        sb.AppendLine("# ═══════════════════════════════════════");
+        sb.AppendLine($"# ARCbot Runtime Config: {instance.InstanceName}");
+        sb.AppendLine($"# Generated at: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        sb.AppendLine("# ═══════════════════════════════════════");
+        sb.AppendLine();
+
+        sb.AppendLine("# === Minecraft Server ===");
+        sb.AppendLine($"MC_HOST={instance.McHost}");
+        sb.AppendLine($"MC_PORT={instance.McPort}");
+        sb.AppendLine($"MC_VERSION={instance.McVersion}");
+        sb.AppendLine($"MC_USERNAME={instance.McUsername}");
+        sb.AppendLine($"MC_AUTH_TYPE={instance.McAuthType}");
+        sb.AppendLine($"MC_LOGIN_PASSWORD={instance.McLoginPassword}");
+        sb.AppendLine($"MC_OWNER_NAME={instance.McOwnerName}");
+        sb.AppendLine();
+
+        sb.AppendLine("# === AI Configuration ===");
+        sb.AppendLine($"LLM_API_KEY={instance.LlmApiKey}");
+        sb.AppendLine($"LLM_API_URL={instance.LlmApiUrl}");
+        sb.AppendLine($"LLM_MODEL={instance.LlmModel}");
+        sb.AppendLine($"AI_STYLE_PROMPT={instance.AiStylePrompt}");
+        sb.AppendLine();
+
+        sb.AppendLine("# === Behavior ===");
+        sb.AppendLine($"TELL_MODE={instance.TellMode}");
+        sb.AppendLine($"AUTO_DEFEND_ENABLED={BoolToEnv(instance.AutoDefendEnabled)}");
+        sb.AppendLine($"INSTINCT_AUTO_TP_LOGIN={BoolToEnv(instance.InstinctAutoTpLogin)}");
+        sb.AppendLine($"INSTINCT_AUTO_EAT={BoolToEnv(instance.InstinctAutoEat)}");
+        sb.AppendLine($"INSTINCT_AUTO_TOOL={BoolToEnv(instance.InstinctAutoTool)}");
+        sb.AppendLine($"INSTINCT_AUTO_DUMP={BoolToEnv(instance.InstinctAutoDump)}");
+        sb.AppendLine($"DEBUG_MODE={BoolToEnv(instance.DebugMode)}");
+
+        File.WriteAllText(outputPath, sb.ToString(), Encoding.UTF8);
+    }
+
     /// <summary>
-    /// �� .env �ļ���ȡ���ò���䵽 BotInstance��
+    /// 从 .env 文件读取配置并填充到 BotInstance。��
     /// </summary>
     public BotInstance ReadEnv(string instanceName)
     {
@@ -99,11 +140,11 @@ public class EnvManager
         if (dict.TryGetValue("MC_VERSION", out v)) instance.McVersion = v;
         if (dict.TryGetValue("MC_USERNAME", out v)) instance.McUsername = v;
         if (dict.TryGetValue("MC_AUTH_TYPE", out v)) instance.McAuthType = v;
-        if (dict.TryGetValue("MC_LOGIN_PASSWORD", out v)) instance.McLoginPassword = v;
+        if (dict.TryGetValue("MC_LOGIN_PASSWORD", out v)) instance.McLoginPassword = CryptoHelper.Unprotect(v);
         if (dict.TryGetValue("MC_OWNER_NAME", out v)) instance.McOwnerName = v;
         
-        if (dict.TryGetValue("LLM_API_KEY", out v)) instance.LlmApiKey = v;
-        else if (dict.TryGetValue("DEEPSEEK_API_KEY", out v)) instance.LlmApiKey = v; // Backward compatibility
+        if (dict.TryGetValue("LLM_API_KEY", out v)) instance.LlmApiKey = CryptoHelper.Unprotect(v);
+        else if (dict.TryGetValue("DEEPSEEK_API_KEY", out v)) instance.LlmApiKey = CryptoHelper.Unprotect(v);
 
         if (dict.TryGetValue("LLM_API_URL", out v)) instance.LlmApiUrl = v;
         if (dict.TryGetValue("LLM_MODEL", out v)) instance.LlmModel = v;

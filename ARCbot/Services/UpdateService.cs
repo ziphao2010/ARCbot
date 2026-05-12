@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using ARCbot.Helpers;
 using ARCbot.Models;
 using ARCbot.Views.Dialogs;
 
@@ -10,8 +11,7 @@ namespace ARCbot.Services;
 
 public class UpdateService
 {
-    private readonly string _currentVersion = "1.0.3"; // 你的当前版本号
-    private readonly string _updateUrl = "http://localhost:3000/update";
+    private readonly string _currentVersion = "1.0.3";
     private readonly SettingsService _settingsService;
 
     public UpdateService(SettingsService settingsService)
@@ -26,8 +26,8 @@ public class UpdateService
             using HttpClient client = new HttpClient();
             client.Timeout = TimeSpan.FromSeconds(5);
             
-            // 1. 获取服务器的更新信息
-            string json = await client.GetStringAsync(_updateUrl);
+            var updateUrl = _settingsService.Settings.UpdateCheckUrl;
+            string json = await client.GetStringAsync(updateUrl);
             UpdateInfo updateInfo = JsonSerializer.Deserialize<UpdateInfo>(json);
 
             if (updateInfo == null || !Version.TryParse(updateInfo.Version, out Version remoteVersion))
@@ -67,9 +67,9 @@ public class UpdateService
                 });
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // 网络异常等情况，静默处理，不要打扰用户
+            Logger.Error(ex, "CheckUpdate");
         }
     }
 

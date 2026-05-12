@@ -1,3 +1,4 @@
+using ARCbot.Helpers;
 using ARCbot.Services;
 using ARCbot.Views.Pages;
 using ARCbot.ViewModels;
@@ -169,9 +170,9 @@ public partial class MainWindow : FluentWindow
                 BackgroundOverlay.Visibility = Visibility.Visible;
                 RootNavigation.Background = System.Windows.Media.Brushes.Transparent; // 强制导航栏透明，透出底图
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // 图片加载失败时回退
+                Logger.Error(ex, "UpdateBackground");
                 BackgroundImage.Source = null;
                 WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.Mica;
                 BackgroundOverlay.Visibility = Visibility.Collapsed;
