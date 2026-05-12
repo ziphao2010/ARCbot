@@ -74,13 +74,14 @@ public class NodeProcessManager : IDisposable
         psi.Environment["PYTHONIOENCODING"] = "utf-8";
 
         // 将 .env 所在目录加入环境（dotenv 会自动读取）
-        // 确保工作目录正确，.env 文件在实例根目录
+        // 生成运行时 .env（解密敏感字段供 Node.js 进程使用）
         var envFilePath = PathHelper.GetInstanceEnvPath(InstanceName);
         if (System.IO.File.Exists(envFilePath))
         {
-            // 有些项目需要 .env 在工作目录，复制一份到 src
             var srcEnvPath = System.IO.Path.Combine(srcDir, ".env");
-            System.IO.File.Copy(envFilePath, srcEnvPath, overwrite: true);
+            var envManager = new EnvManager();
+            var instance = envManager.ReadEnv(InstanceName);
+            envManager.WriteRuntimeEnv(instance, srcEnvPath);
         }
 
         _process = new Process { StartInfo = psi, EnableRaisingEvents = true };
@@ -216,7 +217,7 @@ public class NodeProcessManager : IDisposable
         {
             if (!_process.HasExited)
             {
-                try { _process.Kill(entireProcessTree: true); } catch { /* ignore */ }
+                try { _process.Kill(entireProcessTree: true); } catch (Exception ex) { Logger.Error(ex, "ProcessDispose"); }
             }
             _process.Dispose();
             _process = null;

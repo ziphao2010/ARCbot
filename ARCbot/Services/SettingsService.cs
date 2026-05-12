@@ -25,8 +25,9 @@ public class SettingsService
                 var json = File.ReadAllText(PathHelper.AppSettingsPath);
                 return JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.Error(ex, "LoadSettings");
                 return new AppSettings();
             }
         }
@@ -40,9 +41,9 @@ public class SettingsService
             var json = JsonSerializer.Serialize(_settings, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(PathHelper.AppSettingsPath, json);
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore save errors
+            Logger.Error(ex, "SaveSettings");
         }
     }
 

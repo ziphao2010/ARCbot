@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Controls;
+using ARCbot.Helpers;
 using Wpf.Ui.Controls;
 
 namespace ARCbot.Views.Pages;
@@ -35,9 +36,9 @@ public partial class WebPage : UserControl
                 LoadingProgressBar.Visibility = System.Windows.Visibility.Collapsed;
             };
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // 处理初始化失败的情况
+            Logger.Error(ex, "WebView2.Initialize");
         }
     }
 

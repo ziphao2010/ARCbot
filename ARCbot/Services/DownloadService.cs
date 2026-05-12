@@ -12,20 +12,15 @@ namespace ARCbot.Services;
 public class DownloadService
 {
     private readonly HttpClient _httpClient;
+    private readonly SettingsService _settingsService;
 
-    // Node.js ��Я�����ص�ַ��Windows x64��
-    private const string NodeJsUrl =
-        "https://nodejs.org/dist/v20.11.1/node-v20.11.1-win-x64.zip";
-
-    // �����˻��������ص�ַ
-    private const string BaseAgentUrl =
-        "https://zip1.webgetstore.com/2026/04/13/6b22070a3b7dc42cc840faf020ff0ff4.zip?sg=4ae7284f4af496ed2f49bfca2b8d17d1&e=69dc6ea3&fileName=minecraft-ai-agent.zip&fi=282406185";
-
-    public DownloadService()
+    public DownloadService(SettingsService settingsService)
     {
+        _settingsService = settingsService;
+
         _httpClient = new HttpClient(new HttpClientHandler
         {
-            AllowAutoRedirect = true   // �����ض���
+            AllowAutoRedirect = true
         })
         {
             Timeout = TimeSpan.FromMinutes(10)
@@ -81,8 +76,9 @@ public class DownloadService
 
         var zipPath = Path.Combine(PathHelper.DownloadsDir, "node_runtime.zip");
 
-        // 1. ����
-        await DownloadFileAsync(NodeJsUrl, zipPath, progress, ct);
+        // 1. 下载
+        var nodeUrl = _settingsService.Settings.NodeJsDownloadUrl;
+        await DownloadFileAsync(nodeUrl, zipPath, progress, ct);
 
         // 2. ��ѹ ���� Node.js �ٷ� zip ����һ��Ŀ¼����Ҫ�ҵ� node.exe
         var tempExtract = Path.Combine(PathHelper.DownloadsDir, "node_temp");
@@ -115,8 +111,8 @@ public class DownloadService
         IProgress<(long downloaded, long total)>? progress = null,
         CancellationToken ct = default)
     {
-        // ʼ�����������Ի�ȡ���°汾
-        await DownloadFileAsync(BaseAgentUrl, PathHelper.BaseAgentZipPath, progress, ct);
+        var baseUrl = _settingsService.Settings.BaseAgentDownloadUrl;
+        await DownloadFileAsync(baseUrl, PathHelper.BaseAgentZipPath, progress, ct);
     }
 
     /// <summary>

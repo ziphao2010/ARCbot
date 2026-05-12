@@ -48,12 +48,16 @@ public static class PathHelper
     public static string GetInstancePluginsDir(string instanceName) =>
         Path.Combine(GetInstanceDir(instanceName), "plugins");
 
-    /// <summary>ȷ�����б�ҪĿ¼����</summary>
+    /// <summary>日志目录</summary>
+    public static string LogsDir => Path.Combine(RootDir, "logs");
+
+    /// <summary>确保所有必要目录存在</summary>
     public static void EnsureDirectories()
     {
         Directory.CreateDirectory(RootDir);
         Directory.CreateDirectory(RuntimeDir);
         Directory.CreateDirectory(InstancesDir);
         Directory.CreateDirectory(DownloadsDir);
+        Directory.CreateDirectory(LogsDir);
     }
 }
